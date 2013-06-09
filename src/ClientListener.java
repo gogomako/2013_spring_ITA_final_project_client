@@ -21,10 +21,12 @@ public class ClientListener extends Thread{
     Socket clientReceiveSocket;
     ObjectInputStream ois;
     Message msg;
+    HuffmanDecoder decoder;
+    ClientList clientList;
     
     int port;
-    ClientListener(){}
-    ClientListener(int _port){port=_port;}
+    ClientListener(){decoder=new HuffmanDecoder();}
+    ClientListener(int _port){port=_port;decoder=new HuffmanDecoder();}
     
 
     public void run(){
@@ -44,34 +46,42 @@ public class ClientListener extends Thread{
         }        
     }
     
-    public void checkMsgFromServer(Message msg){
+    public void checkMsgFromServer(Message msg){       
         int type=msg.getType();
         String text=msg.getMsg();
         String sender=msg.getNickName();      
         switch(type){
             case 0:
+                System.out.println("get a system msg:"+text);
                 if(sender.equals("System Msg:")){
                     ClientScreen.updateMsgScreen("========System Anoncement:"+text+"========\n");
                 }else if(sender.equals("Client List:")){
                     System.out.println("get client list");
                     System.out.println(text);
                     String[] list=text.split(",");
-                    ClientScreen.clientList.setList(list);  
-                    ClientScreen.setClientList();
+                    clientList=new ClientList(list);   
+                    System.out.println(clientList.getListSize());   
+                    if(loginScreen.login)ClientScreen.setClientList();
                 }                
                 break;
             case 1:
+                text=decoder.decode(text);
                 ClientScreen.updateMsgScreen("["+sender+"]: "+text+"\n");
                 break;
             case 2:
+                text=decoder.decode(text);
                 PrivateMessage pm=(PrivateMessage)msg;
-                ClientScreen.updateMsgScreen("Private Msg From["+sender+"]:"+msg);
+                String msgderiect="";
+                if(sender.equals(loginScreen.userName))msgderiect="To ["+pm.getReceiver()+"]: ";
+                else msgderiect="From ["+pm.getNickName()+"]: ";
+                ClientScreen.updateMsgScreen("Private Msg "+msgderiect+text+"\n");
                 break;
             case 3:
                 CodebookMessage cm=(CodebookMessage)msg;
                 CodeBookManager cbm=new CodeBookManager();
                 CodeBook cb=new CodeBook();
-                cb.setContent(cm.getCodebook().getMap());
+                cb.setEncodeMap(cm.getCodebook().getEncodeMap());
+                cb.setDecodeMap(cm.getCodebook().getDecodeMap());
                 cbm.setCodeBook(cb);                
                 System.out.println("Get Codebook");
                 ClientScreen.updateCodebookArea();

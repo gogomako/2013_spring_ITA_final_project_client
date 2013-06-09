@@ -20,6 +20,7 @@ public class MsgSender{
     ObjectOutputStream oos;
     String ip;
     int port;
+    
 
     MsgSender() {
     }
@@ -29,7 +30,7 @@ public class MsgSender{
         port = _port;
     }
 
-    public void send(Message msg) {
+    public void send(Message msg) {        
         try {
             clientSocket = new Socket(ip, port);
             oos = new ObjectOutputStream(clientSocket.getOutputStream());

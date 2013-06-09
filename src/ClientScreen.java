@@ -4,9 +4,13 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.Queue;
+import java.util.Stack;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.JScrollBar;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
@@ -25,74 +29,97 @@ public class ClientScreen extends javax.swing.JFrame implements KeyListener {
      */
     static int listingPort = 4444;
     static int sendingPort = 5555;
-    static String ip = "172.20.4.47";
+    static String ip = "127.0.0.1";
     static JTextArea _chatScreenArea;
-    static String userName;
     static JTextArea _codebookArea;
     static CodeBookManager cbm;
     static MsgSender msgSender;
     static ClientList clientList;
     static JComboBox _userListBox;
+    static HuffmanEncoder encoder;
+    static ArrayList<String> typeEncodeMsg;
+    static JScrollBar vertical;
 
     public ClientScreen() {
         initComponents();
+        vertical = this.jScrollPane2.getVerticalScrollBar();
         _userListBox = this.userListBox;
         msgSender = new MsgSender(ip, sendingPort);
         _chatScreenArea = this.chatScreenArea;
         _codebookArea = this.codebookArea;
         this.chatScreenArea.setEditable(false);
+        this.encodeMsgArea.setEditable(false);
         msgArea.addKeyListener(this);
-        ClientListener clientListener = new ClientListener(listingPort);
-        clientListener.start();
         clientList = new ClientList();
+        encoder = new HuffmanEncoder();
+        typeEncodeMsg = new ArrayList<String>() {
+        };
         this.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent event) {
-                Message leaveMsg=new Message(0,userName,"User Leaving");
+                Message leaveMsg = new Message(0, loginScreen.userName, "User Leaving");
                 msgSender.send(leaveMsg);
                 System.out.println("close");
             }
         });
+        this.initCodebook();
+        String m = cbm.getCodeword("a");
+        System.out.println(m);
+        this.setClientList();
+    }
+
+    public static void setScrollToButtom() {
+        vertical.setValue(vertical.getMaximum());
     }
 
     public void initCodebook() {
         cbm = new CodeBookManager();
-        cbm.initCodebook(userName, msgSender);
-    }
-
-    public static void requestClientList() {
-        Message msg = new Message(0, null, "request for client list");
-        msgSender.send(msg);
+        cbm.initCodebook(loginScreen.userName, msgSender);
     }
 
     public static void setClientList() {
+        System.out.println("set clientList");
+        System.out.println(clientList);
         DefaultComboBoxModel dcbm = new DefaultComboBoxModel();
         String[] users = clientList.getList();
         for (int i = 0; i < users.length; i++) {
-            dcbm.addElement(users[i]);
+            if (!(users[i].equals(loginScreen.userName))) {
+                dcbm.addElement(users[i]);
+            }
         }
         _userListBox.setModel(dcbm);
     }
 
-    public void setUserName(String name) {
-        userName = name;
-        System.out.println("set user name to: " + userName);
-    }
-
-    public void keyPressed(KeyEvent e) {
+    public void keyPressed(KeyEvent e) {     //get the key press event from msgArea
         int key = e.getKeyCode();
-        if (key == KeyEvent.VK_ENTER) {
+        Character c = e.getKeyChar();
+        if (key == KeyEvent.VK_ENTER) {    // if user press enter
             Message msg = this.getMessage();
-            msgSender.send(msg);
+            msgSender.send(msg);               //send msg
             msgArea.setText("");
+            this.encodeMsgArea.setText("");
+            typeEncodeMsg.clear();              //clear the list of codeword
             e.consume();
+        } else if (key == KeyEvent.VK_BACK_SPACE) {   // if press backspace   
+            typeEncodeMsg.remove(typeEncodeMsg.size() - 1);  //remove last codeword from list            
+        } else {                                             //press other word
+            String text = c.toString();
+            text = encoder.encode(text);                //encode the word
+            typeEncodeMsg.add(text);                    // add codeword to list
+            System.out.println("push " + text);
         }
+        StringBuffer showEncode = new StringBuffer();
+        for (int i = 0; i < typeEncodeMsg.size(); i++) {    //print the list of codeword
+            showEncode.append(typeEncodeMsg.get(i));
+        }
+        this.encodeMsgArea.setText(showEncode.toString());  //set the encode msg area
+
     }
 
     public Message getMessage() {
         Message m;
-        String sender = userName;
+        String sender = loginScreen.userName;
         String receiver = (String) this.userListBox.getSelectedItem();
-        String msg = this.msgArea.getText();
+        String msg = encoder.encode(this.msgArea.getText());
         if (sender.equals("")) {
             sender = "Anonymou User";
         }
@@ -109,7 +136,7 @@ public class ClientScreen extends javax.swing.JFrame implements KeyListener {
     public static void updateCodebookArea() {
         StringBuffer buffer = new StringBuffer();
         for (Map.Entry<String, String> entry : cbm.getContent().getEntrySet()) {
-            buffer.append(entry.getKey() + " => " + entry.getValue() + "\n");
+            buffer.append(entry.getKey() + "\t=>" + entry.getValue() + "\n");
         }
         ClientScreen._codebookArea.setText(buffer.toString());
         System.out.println("updateCodebookArea");
@@ -118,7 +145,7 @@ public class ClientScreen extends javax.swing.JFrame implements KeyListener {
     public static void updateMsgScreen(String msg) {
         ClientScreen._chatScreenArea.append(msg);
         System.out.println("updateMsgScreen");
-
+        ClientScreen.setScrollToButtom();
     }
 
     public void setLookAndFeel() {
@@ -204,6 +231,7 @@ public class ClientScreen extends javax.swing.JFrame implements KeyListener {
         jScrollPane4.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         encodeMsgArea.setColumns(20);
+        encodeMsgArea.setLineWrap(true);
         encodeMsgArea.setRows(5);
         jScrollPane4.setViewportView(encodeMsgArea);
 
@@ -296,7 +324,6 @@ public class ClientScreen extends javax.swing.JFrame implements KeyListener {
 
     @Override
     public void keyTyped(KeyEvent e) {
-        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override

@@ -11,8 +11,12 @@ import java.util.List;
  * @author Ashley
  */
 public class ClientList {
-    String[] users;
+    static String[] users;
+    
     ClientList(){}
+    
+    ClientList(String[] u){users=u;}
+    
     public void setList(String[] list){
         users=list;
         System.out.println("client List been set");

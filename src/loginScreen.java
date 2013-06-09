@@ -1,14 +1,15 @@
 
 
-
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 /**
  *
  * @author Ashley
@@ -18,14 +19,33 @@ public class loginScreen extends javax.swing.JFrame {
     /**
      * Creates new form loginScreen
      */
-    String userName;
+    
     ClientScreen cs;
+    MsgSender sender;
+    ClientList clientList;
+    static ClientListener clientListener;
+    int listingPort = 4444;
+    int sendingPort = 5555;
+    String ip = "127.0.0.1";
+    static String userName="";
+    static boolean login=false;
 
     public loginScreen() {
         initComponents();
-        cs = new ClientScreen();        
-        cs.requestClientList();
-        
+        clientListener = new ClientListener(listingPort);
+        clientListener.start();
+        sender = new MsgSender(ip, sendingPort);
+        this.requestClientList();
+        //this.setBak();
+    }
+
+    public void setBak() {
+        System.out.println("dhow");
+        ((JPanel) this.getContentPane()).setOpaque(false);
+        ImageIcon img = new ImageIcon("bg1.png");
+        JLabel background = new JLabel(img);
+        this.getLayeredPane().add(background, new Integer(Integer.MIN_VALUE));
+        background.setBounds(0, 0, img.getIconWidth(), img.getIconHeight());
     }
 
     /**
@@ -87,23 +107,22 @@ public class loginScreen extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(224, Short.MAX_VALUE)
+                .addContainerGap(231, Short.MAX_VALUE)
                 .addComponent(jLabel1)
                 .addGap(222, 222, 222))
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(293, 293, 293)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE)
-                            .addComponent(loginBut, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(284, 284, 284)
-                        .addComponent(userNameField, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(284, 284, 284)
+                .addComponent(userNameField, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(hintMsg, javax.swing.GroupLayout.PREFERRED_SIZE, 362, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(293, 293, 293)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE)
+                    .addComponent(loginBut, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -130,26 +149,37 @@ public class loginScreen extends javax.swing.JFrame {
         this.doLogin();
     }//GEN-LAST:event_loginButActionPerformed
 
-    public void doLogin(){
-        this.hintMsg.setText("");
-        userName = this.userNameField.getText();
-        System.out.println("type:"+userName);
-        String[] list=ClientScreen.clientList.getList();
-        System.out.println("list"+list[0]);
-        if (ClientScreen.clientList.checkIsNameInList(userName)) {
-            this.hintMsg.setText("User name exist. Please try another one. Thank you!");
-        } else {
-            this.setVisible(false);
-            cs.setVisible(true);
-            cs.setUserName(userName);
-            cs.initCodebook();            
-            cs.setClientList();
-        }
+    public void requestClientList() {
+        Message msg = new Message(0, null, "request for client list");
+        sender.send(msg);
     }
     
+    public static String getUserName(){
+        return userName;
+    }
+
+    public void doLogin() {
+        clientList=new ClientList();
+        this.hintMsg.setText("");
+        userName = this.userNameField.getText();
+        System.out.println("type:" + userName);
+        System.out.println("list size="+clientList.getListSize());
+        String[] list = clientList.getList();
+        System.out.println("list" + list[0]);
+        if (clientList.checkIsNameInList(userName)) {
+            this.hintMsg.setText("User name exist. Please try another one. Thank you!");
+        } else {            
+            cs = new ClientScreen();
+            this.setVisible(false);
+            cs.setVisible(true);  
+            login=true;
+            //cs.initCodebook();
+            //cs.setClientList();            
+        }
+    }
+
     private void loginButKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_loginButKeyPressed
         // TODO add your handling code here:
-        
     }//GEN-LAST:event_loginButKeyPressed
 
     private void formKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyPressed
