@@ -54,7 +54,7 @@ public class ClientListener extends Thread{
             case 0:
                 System.out.println("get a system msg:"+text);
                 if(sender.equals("System Msg:")){
-                    ClientScreen.updateMsgScreen("========System Anoncement:"+text+"========\n");
+                    ClientScreen.updateMsgScreen("<font color=blue size=5>========System Anoncement:"+text+"========</font><br>");
                 }else if(sender.equals("Client List:")){
                     System.out.println("get client list");
                     System.out.println(text);
@@ -65,16 +65,17 @@ public class ClientListener extends Thread{
                 }                
                 break;
             case 1:
-                text=decoder.decode(text);
-                ClientScreen.updateMsgScreen("["+sender+"]: "+text+"\n");
+                text=decoder.decode(text);                
+                ClientScreen.updateMsgScreen("["+sender+"]: "+text+"<br>");
                 break;
             case 2:
                 text=decoder.decode(text);
                 PrivateMessage pm=(PrivateMessage)msg;
-                String msgderiect="";
-                if(sender.equals(loginScreen.userName))msgderiect="To ["+pm.getReceiver()+"]: ";
-                else msgderiect="From ["+pm.getNickName()+"]: ";
-                ClientScreen.updateMsgScreen("Private Msg "+msgderiect+text+"\n");
+                ClientScreen.updateMsgScreen("<font color=red size=4>["+sender+"]: "+text+"</font><br>");
+//                String msgderiect="";
+//                if(sender.equals(loginScreen.userName))msgderiect="To ["+pm.getReceiver()+"]: ";
+//                else msgderiect="From ["+pm.getNickName()+"]: ";
+//                ClientScreen.updateMsgScreen("Private Msg "+msgderiect+text+"\n");
                 break;
             case 3:
                 CodebookMessage cm=(CodebookMessage)msg;

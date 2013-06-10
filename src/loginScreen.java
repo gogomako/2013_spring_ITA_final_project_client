@@ -206,7 +206,11 @@ public class loginScreen extends javax.swing.JFrame {
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    javax.swing.UIManager.setLookAndFeel("com.jtattoo.plaf.aluminium.AluminiumLookAndFeel");
+                    //com.jtattoo.plaf.hifi.HiFiLookAndFeel
+                    //com.jtattoo.plaf.acryl.AcrylLookAndFeel
+                    //com.jtattoo.plaf.noire.NoireLookAndFeel
+                    //com.jtattoo.plaf.aluminium.AluminiumLookAndFeel
                     break;
                 }
             }
@@ -223,7 +227,7 @@ public class loginScreen extends javax.swing.JFrame {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
+            public void run() {                
                 new loginScreen().setVisible(true);
             }
         });
