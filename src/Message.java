@@ -9,14 +9,15 @@
  */
 public class Message implements java.io.Serializable{
 
-    int type; //0=>system msg,1=>public msg, 2=>private msg, 3=>codebook Msg
+    int type; //0=> system msg, 1=>public msg, 2=>private msg, 3=>codebook Msg
     String sendNickName; //senderNickName   
-    String msg;
+    byte[] msg;
+    HuffmanDecoder decoder;
 
     Message() {
     } 
 
-    Message(int t, String n, String m) {
+    Message(int t, String n, byte[] m) {
         type = t;
         sendNickName = n;
         msg = m;
@@ -26,7 +27,7 @@ public class Message implements java.io.Serializable{
         type = t;
     }
 
-    public void setMsg(String s) {
+    public void setMsg(byte[] s) {
         msg = s;
     }
 
@@ -39,7 +40,9 @@ public class Message implements java.io.Serializable{
     }
 
     public String getMsg() {
-        return msg;
+        if(msg==null)return null;
+        decoder=new HuffmanDecoder();        
+        return decoder.decode(msg);
     }
 
     public String getNickName() {

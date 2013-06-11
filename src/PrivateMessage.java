@@ -11,7 +11,7 @@ public class PrivateMessage extends Message{
     //String sendNickName; //sender's nick name    
     String recNickName; //receiver's nick Name
     PrivateMessage(){super.setType(2);} //0=> system msg, 1=>public msg, 2=>private msg
-    PrivateMessage(String sn,String rn,String m){
+    PrivateMessage(String sn,String rn,byte[] m){
         super.setType(2);
         super.setSenderNickName(sn);
         recNickName=rn;

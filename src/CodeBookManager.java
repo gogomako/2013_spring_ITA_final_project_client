@@ -16,22 +16,26 @@ import java.util.Map;
  *
  * @author Ashley
  */
-public class CodeBookManager {
+public class CodeBookManager implements java.io.Serializable {
 
+    private static final long serialVersionUID = 1L;
     static CodeBook codebook;
 
     CodeBookManager() {
-        codebook = new CodeBook();
+        //codebook = new CodeBook();
+    }
+
+    CodeBookManager(CodeBook c) {
+        codebook = c;
     }
 
     public void initCodebook(String sender, MsgSender ms) { //request codebook
-        System.out.println("init codebook sender:"+sender);
-        Message m = new Message(0, sender, "request for codebook");
-        ms.send(m);
+        System.out.println("init codebook sender:" + sender);
+        ms.sendSystemMsg(sender, "request for codebook");
     }
 
     public void setCodeBook(CodeBook book) {
-        codebook = book;
+        codebook = book;        
     }
 
     public String getCodeword(String s) {  //get codeword
@@ -62,5 +66,22 @@ public class CodeBookManager {
 
     public String getWord(String s) {
         return codebook.getWord(s);
+    }
+    
+    public double getCompressRate(){        
+        double original= Byte.SIZE*codebook.getEncodeMap().size()*2;
+        double newSize=0;        
+        for (Map.Entry<String, String> entry : codebook.getEncodeMap().entrySet()) {
+            newSize+=entry.getValue().length();
+        }        
+        System.out.println("ori="+original+" new="+newSize);
+        return newSize/original;
+    }
+    
+    public double getCompressRate(String s,String code){        
+        double original= Byte.SIZE*s.length()*2;
+        double newSize=code.length();   
+        System.out.println("ori="+original+" new="+newSize);
+        return newSize/original;
     }
 }

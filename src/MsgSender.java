@@ -18,8 +18,9 @@ public class MsgSender{
 
     Socket clientSocket;
     ObjectOutputStream oos;
-    String ip;
-    int port;
+    static String ip;
+    static int port;
+    HuffmanEncoder encoder;
     
 
     MsgSender() {
@@ -40,5 +41,18 @@ public class MsgSender{
         } catch (Exception ex) {
             Logger.getLogger(MsgSender.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    public void send(int type,String sender,String s){
+        encoder=new HuffmanEncoder();
+        byte[] m=encoder.encode(s);
+        System.out.println("send"+s+" to"+m.length);
+        Message msg=new Message(type,sender,m);
+        this.send(msg);
+    }
+    
+    public void sendSystemMsg(String sender,String msg){
+        SystemMessage sm=new SystemMessage(sender,msg);
+        this.send(sm);
     }
 }

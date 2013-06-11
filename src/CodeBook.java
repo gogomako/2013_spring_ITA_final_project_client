@@ -92,5 +92,6 @@ public class CodeBook implements java.io.Serializable {
 
     public HashMap<String, String> getDecodeMap() {
         return decodeCodebook;
-    }
+    }    
+    
 }
